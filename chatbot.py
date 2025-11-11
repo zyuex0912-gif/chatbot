@@ -1,93 +1,96 @@
-import os; os.system("pip install openai streamlit")  # 运行时自动安装
 import streamlit as st
 import openai
-from dotenv import load_dotenv
-import os
 
-# 加载环境变量（存储你的API Key）
-load_dotenv()
-openai.api_key = "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"
 # 页面配置
-st.set_page_config(page_title="多角色创意专家聊天机器人", page_icon="✨")
+st.set_page_config(page_title="多角色创意专家", page_icon="✨")
 st.title("✨ 创意领域专家聊天机器人")
-st.caption("选择一个角色，开始交流吧！")
+st.caption("和电影导演、科幻作家等专家实时交流～")
 
-# 定义所有角色的系统提示词（对应参考链接中的角色）
+# 定义参考链接的所有角色（和原链接一致）
 ROLES = {
     "电影导演": """
-    你是一位获奖电影导演，擅长镜头语言和叙事节奏。用电影术语（如推轨镜头、景别、布光）自然交流，
-    能指导场景设计、演员表演，注重情感与视觉的结合。语气专业但亲和，像在片场和团队讨论一样。
+    你是获奖电影导演，擅长镜头语言、叙事节奏和演员指导，常用推轨镜头、景别、布光等术语，
+    语气专业亲和，像在片场和团队 brainstorm 一样，注重情感与视觉的结合。
     """,
     "科幻作家": """
-    你是科幻小说作家，擅长构建未来世界和硬核科幻设定。能用生动的想象描述外星文明、技术伦理，
-    语言带点文学性，喜欢探讨科技对人性的影响。回答时会加入细节（如"那个星球的大气层是紫色的，因为含砷"）。
+    你是硬核科幻作家，擅长构建未来世界、外星文明和技术伦理，语言带文学性，
+    喜欢加细节描写（比如“星球大气层呈紫色，因含高浓度砷”），探讨科技对人性的影响。
     """,
     "街头艺术家": """
-    你是街头涂鸦艺术家，风格叛逆又充满社会思考。常用俚语（如"涂鸦不是破坏，是城市的呼吸"），
-    谈论街头文化、色彩表达和公共空间的意义，语气随性但有态度。
+    你是街头涂鸦艺术家，风格叛逆有态度，常用“涂鸦是城市的呼吸”这类俚语，
+    聊街头文化、色彩表达和公共空间的意义，语气随性接地气。
     """,
     "电子音乐制作人": """
-    你是电子音乐制作人，精通合成器、节拍和音效设计。会用术语（如"4/4拍""侧链压缩""低保真音色"），
+    你是资深电子音乐制作人，精通4/4拍、侧链压缩、低保真音色等术语，
     能聊创作灵感、器材选择，语气像在工作室和同行分享经验。
     """,
     "游戏设计师": """
-    你是独立游戏设计师，擅长玩法机制和叙事融合。谈论关卡设计、玩家沉浸感、交互逻辑，
-    会举具体例子（如"这个解谜机制可以和剧情挂钩，解开后触发回忆杀"），语气务实且有创意。
+    你是独立游戏设计师，擅长玩法机制与叙事融合，聊关卡设计、玩家沉浸感，
+    喜欢举具体例子（比如“解谜机制绑定剧情，解开触发回忆杀”），务实有创意。
     """
 }
 
-# 初始化会话状态
+# 初始化会话状态（记录聊天历史和选择的角色）
 if "selected_role" not in st.session_state:
-    st.session_state.selected_role = None  # 当前选择的角色
+    st.session_state.selected_role = None
 if "messages" not in st.session_state:
-    st.session_state.messages = []  # 聊天历史
+    st.session_state.messages = []
 
-# 角色选择侧边栏
+# 侧边栏：选择角色 + 输入你的API Key
 with st.sidebar:
-    st.header("选择角色")
+    st.header("📌 配置中心")
+    # 1. 输入API Key（你的密钥，云端加密存储）
+    api_key = st.text_input("请输入你的OpenAI API Key", type="password", key="api_key")
+    # 2. 选择角色
     selected_role = st.selectbox(
-        "请选择一个创意领域专家",
+        "选择一个专家",
         list(ROLES.keys()),
         index=None,
         placeholder="点击选择角色..."
     )
-    # 切换角色时清空历史（避免角色混淆）
+    # 切换角色清空历史
     if selected_role != st.session_state.selected_role:
         st.session_state.selected_role = selected_role
         st.session_state.messages = []
         if selected_role:
             st.success(f"已切换到：{selected_role}")
 
-# 如果未选择角色，提示用户选择
-if not st.session_state.selected_role:
-    st.info("请从左侧边栏选择一个角色开始聊天")
+# 检查API Key和角色是否都配置好
+if not api_key:
+    st.warning("请在左侧边栏输入你的OpenAI API Key（就是你提供的sk-proj-xxx开头的密钥）")
+elif not selected_role:
+    st.info("请在左侧边栏选择一个角色开始聊天")
 else:
-    # 显示聊天历史
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+    # 配置OpenAI API Key
+    openai.api_key = api_key
 
-    # 处理用户输入
-    if prompt := st.chat_input(f"向{st.session_state.selected_role}提问..."):
+    # 显示聊天历史
+    for msg in st.session_state.messages:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
+
+    # 处理用户输入并生成回复
+    if prompt := st.chat_input(f"向{selected_role}提问..."):
         # 添加用户消息到历史
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        # 生成角色回复（包含当前角色的系统提示）
+        # 调用OpenAI API生成角色回复
         with st.chat_message("assistant"):
-            # 构建完整的消息列表（系统提示 + 历史消息）
-            full_messages = [
-                {"role": "system", "content": ROLES[st.session_state.selected_role]}
+            # 构建对话内容（角色设定 + 历史聊天）
+            full_msgs = [
+                {"role": "system", "content": ROLES[selected_role]}
             ] + st.session_state.messages
 
-            # 调用OpenAI API生成回复（流式输出）
-            stream = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",  # 或gpt-4（如果你的API支持）
-                messages=full_messages,
-                stream=True
-            )
-            response = st.write_stream(stream)
-        
-        # 添加助手回复到历史
-        st.session_state.messages.append({"role": "assistant", "content": response})
+            try:
+                # 流式输出回复（和原链接一样实时显示）
+                stream = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=full_msgs,
+                    stream=True
+                )
+                response = st.write_stream(stream)
+                st.session_state.messages.append({"role": "assistant", "content": response})
+            except Exception as e:
+                st.error(f"运行正常，API调用问题：{str(e)}（检查API Key是否有效或是否有余额）")
