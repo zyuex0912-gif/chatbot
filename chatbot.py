@@ -12,7 +12,7 @@ except ImportError:
 
 # 页面配置
 st.set_page_config(
-    page_title="RoleCraft | Creative Expert Chatbot",
+    page_title="Role-based Creative Chatbot",
     page_icon="🎭",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -130,8 +130,8 @@ with st.sidebar:
         """)
 
 # 主页面内容
-st.title("✨ RoleCraft: Creative Expert Chatbot")
-st.caption("Chat with professionals across creative fields")
+st.title("✨Role-based Creative Chatbot")
+st.caption("Select a creative role and ask your question!")
 st.divider()
 
 # 首次访问提示
