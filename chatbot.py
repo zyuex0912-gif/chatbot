@@ -218,6 +218,6 @@ else:
 # 页脚
 st.markdown("""
 <div style="margin-top: 2rem; text-align: center; color: #94a3b8; font-size: 0.9rem;">
-    RoleCraft © 2023 | Powered by OpenAI
+    Built for 'Art & Advanced Big Data' • ZHANG YUE
 </div>
 """, unsafe_allow_html=True)
