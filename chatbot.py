@@ -1,90 +1,94 @@
 import streamlit as st
 import openai
 
-# 页面配置
-st.set_page_config(page_title="多角色创意专家", page_icon="✨")
-st.title("✨ 创意领域专家聊天机器人")
-st.caption("和电影导演、科幻作家等专家实时交流～")
+# Page configuration
+st.set_page_config(page_title="Multi-Role Creative Expert Chatbot", page_icon="✨")
+st.title("✨ Creative Field Expert Chatbot")
+st.caption("Chat with Film Directors, Sci-Fi Writers, and other experts in real time～")
 
-# 定义参考链接的所有角色（和原链接一致）
+# Define all roles from the reference link (1:1 match)
 ROLES = {
-    "电影导演": """
-    你是获奖电影导演，擅长镜头语言、叙事节奏和演员指导，常用推轨镜头、景别、布光等术语，
-    语气专业亲和，像在片场和团队 brainstorm 一样，注重情感与视觉的结合。
+    "Film Director": """
+    You are an award-winning film director skilled in cinematography, narrative pacing, and actor direction. 
+    Naturally use terms like dolly shot, shot size, and lighting setup. 
+    Tone is professional yet approachable—like brainstorming with a film crew—focusing on emotional and visual cohesion.
     """,
-    "科幻作家": """
-    你是硬核科幻作家，擅长构建未来世界、外星文明和技术伦理，语言带文学性，
-    喜欢加细节描写（比如“星球大气层呈紫色，因含高浓度砷”），探讨科技对人性的影响。
+    "Sci-Fi Writer": """
+    You are a hard sci-fi writer adept at building futuristic worlds, alien civilizations, and technological ethics. 
+    Your language has literary flair, with vivid details (e.g., "The planet’s atmosphere is purple due to high arsenic concentrations"). 
+    Explore how technology impacts human nature.
     """,
-    "街头艺术家": """
-    你是街头涂鸦艺术家，风格叛逆有态度，常用“涂鸦是城市的呼吸”这类俚语，
-    聊街头文化、色彩表达和公共空间的意义，语气随性接地气。
+    "Street Artist": """
+    You are a street graffiti artist with a rebellious, thoughtful style. 
+    Use slang like "Graffiti is the breath of the city" and discuss street culture, color expression, and the meaning of public space. 
+    Tone is casual and down-to-earth.
     """,
-    "电子音乐制作人": """
-    你是资深电子音乐制作人，精通4/4拍、侧链压缩、低保真音色等术语，
-    能聊创作灵感、器材选择，语气像在工作室和同行分享经验。
+    "Electronic Music Producer": """
+    You are a seasoned electronic music producer proficient in terms like 4/4 beat, sidechain compression, and lo-fi sound. 
+    Talk about creative inspiration and equipment choices—tone is like sharing tips with fellow producers in a studio.
     """,
-    "游戏设计师": """
-    你是独立游戏设计师，擅长玩法机制与叙事融合，聊关卡设计、玩家沉浸感，
-    喜欢举具体例子（比如“解谜机制绑定剧情，解开触发回忆杀”），务实有创意。
+    "Game Designer": """
+    You are an indie game designer specializing in integrating gameplay mechanics with storytelling. 
+    Discuss level design and player immersion, using concrete examples (e.g., "Tie the puzzle to the plot—unlocking it triggers a flashback"). 
+    Tone is practical and creative.
     """
 }
 
-# 初始化会话状态（记录聊天历史和选择的角色）
+# Initialize session state (store chat history and selected role)
 if "selected_role" not in st.session_state:
     st.session_state.selected_role = None
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# 侧边栏：选择角色 + 输入你的API Key
+# Sidebar: Role selection + API Key input
 with st.sidebar:
-    st.header("📌 配置中心")
-    # 1. 输入API Key（你的密钥，云端加密存储）
-    api_key = st.text_input("请输入你的OpenAI API Key", type="password", key="api_key")
-    # 2. 选择角色
+    st.header("📌 Configuration")
+    # 1. Input API Key (your secret key, encrypted in the cloud)
+    api_key = st.text_input("Enter your OpenAI API Key", type="password", key="api_key")
+    # 2. Select role
     selected_role = st.selectbox(
-        "选择一个专家",
+        "Choose an Expert",
         list(ROLES.keys()),
         index=None,
-        placeholder="点击选择角色..."
+        placeholder="Click to select a role..."
     )
-    # 切换角色清空历史
+    # Clear history when switching roles
     if selected_role != st.session_state.selected_role:
         st.session_state.selected_role = selected_role
         st.session_state.messages = []
         if selected_role:
-            st.success(f"已切换到：{selected_role}")
+            st.success(f"Switched to: {selected_role}")
 
-# 检查API Key和角色是否都配置好
+# Check if API Key and role are configured
 if not api_key:
-    st.warning("请在左侧边栏输入你的OpenAI API Key（就是你提供的sk-proj-xxx开头的密钥）")
+    st.warning("Please enter your OpenAI API Key (the sk-proj-xxx key you provided) in the left sidebar")
 elif not selected_role:
-    st.info("请在左侧边栏选择一个角色开始聊天")
+    st.info("Please select a role from the left sidebar to start chatting")
 else:
-    # 配置OpenAI API Key
+    # Configure OpenAI API Key
     openai.api_key = api_key
 
-    # 显示聊天历史
+    # Display chat history
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    # 处理用户输入并生成回复
-    if prompt := st.chat_input(f"向{selected_role}提问..."):
-        # 添加用户消息到历史
+    # Handle user input and generate response
+    if prompt := st.chat_input(f"Ask {selected_role} a question..."):
+        # Add user message to history
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        # 调用OpenAI API生成角色回复
+        # Call OpenAI API to generate role-specific response
         with st.chat_message("assistant"):
-            # 构建对话内容（角色设定 + 历史聊天）
+            # Build conversation context (role setup + chat history)
             full_msgs = [
                 {"role": "system", "content": ROLES[selected_role]}
             ] + st.session_state.messages
 
             try:
-                # 流式输出回复（和原链接一样实时显示）
+                # Stream response (real-time display like the reference link)
                 stream = openai.ChatCompletion.create(
                     model="gpt-3.5-turbo",
                     messages=full_msgs,
@@ -93,4 +97,4 @@ else:
                 response = st.write_stream(stream)
                 st.session_state.messages.append({"role": "assistant", "content": response})
             except Exception as e:
-                st.error(f"运行正常，API调用问题：{str(e)}（检查API Key是否有效或是否有余额）")
+                st.error(f"Runtime Status: API Call Issue - {str(e)} (Check if your API Key is valid or has remaining credits)")
