@@ -1,3 +1,4 @@
+import os; os.system("pip install openai streamlit")  # 运行时自动安装
 import streamlit as st
 import openai
 from dotenv import load_dotenv
