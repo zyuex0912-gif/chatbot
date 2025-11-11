@@ -5,7 +5,7 @@ import openai
 # Page configuration
 st.set_page_config(page_title="Multi-Role Creative Expert Chatbot", page_icon="✨")
 st.title("✨ Role-based Creative Chatbot")
-st.caption("Chat with Film Directors, Sci-Fi Writers, and other experts in real time～")
+st.caption("choose one of the roles")
 
 # Define all roles from the reference link (1:1 match)
 ROLES = {
@@ -48,7 +48,7 @@ with st.sidebar:
     api_key = st.text_input("Enter your OpenAI API Key", type="password", key="api_key")
     # 2. Select role
     selected_role = st.selectbox(
-        "Choose an Expert",
+        "Choose a role",
         list(ROLES.keys()),
         index=None,
         placeholder="Click to select a role..."
