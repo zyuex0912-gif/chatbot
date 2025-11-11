@@ -4,7 +4,7 @@ import openai
 
 # Page configuration
 st.set_page_config(page_title="Multi-Role Creative Expert Chatbot", page_icon="✨")
-st.title("✨ Creative Field Expert Chatbot")
+st.title("✨ Role-based Creative Chatbot")
 st.caption("Chat with Film Directors, Sci-Fi Writers, and other experts in real time～")
 
 # Define all roles from the reference link (1:1 match)
