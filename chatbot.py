@@ -5,8 +5,7 @@ import os
 
 # 加载环境变量（存储你的API Key）
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")  # 读取你自己的API Key
-
+openai.api_key = "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"
 # 页面配置
 st.set_page_config(page_title="多角色创意专家聊天机器人", page_icon="✨")
 st.title("✨ 创意领域专家聊天机器人")
