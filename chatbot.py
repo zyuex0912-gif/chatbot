@@ -1,5 +1,13 @@
 import streamlit as st
-from openai import OpenAI
+import openai
+from openai import OpenAI  # 直接导入新版本类
+
+# 兼容旧版本的降级处理（如果仍有问题可添加）
+try:
+    from openai import OpenAI
+except ImportError:
+    st.error("❌ OpenAI 库版本过低，请确保安装 openai>=1.0.0")
+    st.stop()
 
 # 页面基础配置（和参考链接风格一致）
 st.set_page_config(
